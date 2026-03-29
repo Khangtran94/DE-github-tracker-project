@@ -112,25 +112,25 @@ Follow these robust instructions to reproduce the project and run the code from 
 
 Below is a high-level sequence of how data flows through the pipeline from extraction to visualization:
 
-![Architecture_Diagram](image-3.png)
+<img width="591" height="505" alt="image" src="https://github.com/user-attachments/assets/e81dffe6-c2de-4c59-9b54-75769fe45dfd" />
 
-![alt text](image-2.png)
+<img width="584" height="323" alt="image" src="https://github.com/user-attachments/assets/79e93554-5b58-45d2-bc8a-55f8c296947a" />
 
 ## 📸 Project Screenshots
 
 ### Data Pipeline & Orchestration (Kestra)
 <!-- Insert a screenshot of your successful Kestra execution DAG -->
-![Kestra_Dashboar](image-4.png)
+<img width="1799" height="705" alt="image" src="https://github.com/user-attachments/assets/eb84b124-b064-455a-9b33-e685bede7d6e" />
 
-![Kestra_Tasks](image-5.png)
+<img width="328" height="605" alt="image" src="https://github.com/user-attachments/assets/095c3b22-d433-481f-af2d-0d5032873197" />
 
-![Kestra_Run](image-6.png)
+<img width="1553" height="228" alt="image" src="https://github.com/user-attachments/assets/65406df3-0415-49a1-86bd-7670578e1812" />
 
 ### Data Transformations (dbt Lineage)
-![DBT_Lineage](dbt-lineage.png)
+<img width="1796" height="882" alt="image" src="https://github.com/user-attachments/assets/3608c0cf-626f-4a0d-b971-56651e97f8d8" />
 
 ### Final Dashboard (Looker Studio)
 
-![Looker_1](Looker1.png)
+<img width="972" height="742" alt="image" src="https://github.com/user-attachments/assets/fe3717e5-4b9f-4fec-822e-21ba06446ca7" />
 
-![Looker_2](Looker2.png)
+<img width="968" height="740" alt="image" src="https://github.com/user-attachments/assets/97810482-73a2-40bb-83f3-76a29bd64abb" />
