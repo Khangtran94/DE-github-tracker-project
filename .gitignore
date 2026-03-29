@@ -1,0 +1,29 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+.dlt/secrets.toml
+github.txt
+.env
+check_secrets.py
+*.json
+.env_encoded
+
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+logs/
+
+# Terraform
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.backup
+**/*.tfvars
+**/*.tfvars.json

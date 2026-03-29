@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: fct_repo_growth
+    columns:
+      - name: snapshot_date
+        tests:
+          - not_null
+          - unique
+
+  - name: fct_contributor_activity
+    columns:
+      - name: contributor_id
+        tests:
+          - not_null
+          - unique
+
+  - name: fct_commit_trend
+    columns:
+      - name: week_start
+        tests:
+          - not_null

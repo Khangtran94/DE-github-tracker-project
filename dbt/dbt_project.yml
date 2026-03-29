@@ -1,0 +1,25 @@
+name: 'github_tracker'
+version: '1.0.0'
+config-version: 2
+
+profile: 'github_tracker'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:         # directories to be removed by `dbt clean`
+  - "target"
+  - "dbt_packages"
+
+models:
+  github_tracker:
+    staging:
+      +materialized: view
+      +schema: github_tracker_staging
+    mart:
+      +materialized: table
+      +schema: github_tracker

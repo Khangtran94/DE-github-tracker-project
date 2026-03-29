@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: stg_stargazers
+    columns:
+      - name: user_id
+        tests:
+          - not_null
+          - unique
+      - name: starred_at
+        tests:
+          - not_null
+
+  - name: stg_commits
+    columns:
+      - name: author_name
+        tests:
+          - not_null
+
+  - name: stg_contributors
+    columns:
+      - name: contributor_id
+        tests:
+          - not_null
+          - unique
+      - name: number_contributions
+        tests:
+          - not_null
+
+  - name: stg_forks
+    columns:
+      - name: fork_id
+        tests:
+          - not_null
+          - unique

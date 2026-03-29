@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+  - name: github_tracker_staging
+    database: github-tracker-491107
+    schema: github_tracker_staging
+    tables:
+      - name: repo_overview
+      - name: stargazers
+      - name: contributors
+      - name: commits
+      - name: commit_activity
+      - name: commit_activity__days
+      - name: forks
