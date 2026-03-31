@@ -122,8 +122,8 @@ def fetch_stargazers(
         ]
         yield records
         # Stop early if oldest record on this page is before last cursor
-        if records[-1]["starred_at"] < starred_at.last_value:
-            break
+        # if records[-1]["starred_at"] < starred_at.last_value:
+        #     break
         if len(data) < 100:
             break
         page += 1

@@ -1,13 +1,6 @@
 version: 2
 
 models:
-  - name: fct_repo_growth
-    columns:
-      - name: snapshot_date
-        tests:
-          - not_null
-          - unique
-
   - name: fct_contributor_activity
     columns:
       - name: contributor_id
