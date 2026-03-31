@@ -145,25 +145,45 @@ def fetch_contributors():
 @dlt.resource(name="commit_activity", write_disposition="replace")
 def fetch_commit_activity():
     import time
-    
-    for attempt in range(5):  # retry up to 5 times
-        response = requests.get(f"{BASE_URL}/stats/commit_activity", headers=get_headers())
-        
+
+    MAX_RETRIES = 10
+
+    for attempt in range(MAX_RETRIES):
+        response = requests.get(
+            f"{BASE_URL}/stats/commit_activity",
+            headers=get_headers()
+        )
+
         if response.status_code == 200:
             data = response.json()
+
+            # Sometimes GitHub returns empty list even with 200
+            if not data:
+                print("[WARN] Empty commit activity returned")
+                return []
+
             for week in data:
-                week["week_start"] = datetime.fromtimestamp(week["week"]).strftime("%Y-%m-%d")
-            yield from data  # ✅ also use yield from to be explicit
+                week["week_start"] = datetime.fromtimestamp(
+                    week["week"]
+                ).strftime("%Y-%m-%d")
+
+            yield from data
             return
-            
+
         elif response.status_code == 202:
-            print(f"GitHub is computing stats, retrying in 3s... (attempt {attempt + 1}/5)")
-            time.sleep(3)
-            
+            wait_time = min(2 ** attempt, 60)  # exponential backoff (max 60s)
+            print(
+                f"[INFO] GitHub computing stats... retrying in {wait_time}s "
+                f"(attempt {attempt + 1}/{MAX_RETRIES})"
+            )
+            time.sleep(wait_time)
+
         else:
-            raise Exception(f"Error fetching commit activity: {response.status_code}")
-    
-    raise Exception("GitHub did not return commit activity after 5 retries")
+            print(f"[ERROR] commit_activity failed: {response.status_code}")
+            return []  # 👈 do NOT raise
+
+    print("[ERROR] commit_activity failed after retries — skipping")
+    return []  # 👈 critical: don't crash pipeline
 
 @dlt.resource(name="commits", write_disposition="append", primary_key="sha")
 def fetch_commits(
