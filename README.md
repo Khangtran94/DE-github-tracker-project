@@ -7,6 +7,8 @@
 ![Transform](https://img.shields.io/badge/Transform-dbt-%23FF694B?logo=dbt&logoColor=white)
 ![Dashboard](https://img.shields.io/badge/Dashboard-Looker%20Studio-%234285F4)
 
+<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/8839ae39-e69d-473b-b76d-a4d2d80af4d8" />
+
 ## 📌 Problem Description
 Tracking the health, community engagement, and growth of open-source projects is crucial for maintainers to understand their repository's impact. However, extracting unstructured data from GitHub APIs and turning it into actionable insights can be highly challenging.
 
@@ -46,15 +48,29 @@ This project solves this problem by building an **End-to-End Data Engineering Pi
 
 Here are some of the key technical decisions and optimizations implemented in this pipeline:
 
-**1. How does `dlt` help in the ingestion step?**
+   **1. How does `dlt` help in the ingestion step?**
 `dlt` (data load tool) simplifies the **Extraction** and **Loading** steps of our ELT pipeline. Rather than writing extensive boilerplate code to handle GitHub API pagination, rate-limiting, and complex schema inference, `dlt` natively handles these challenges out-of-the-box. It automatically parses the deeply nested JSON structures retrieved from GitHub's REST endpoints, normalizes them, and elegantly formats them into relational tables suited for loading directly into our BigQuery Data Warehouse.
 
-**2. What is the benefit of Incremental Loading during ingestion?**
+Analysis: From a Senior Data Engineer’s perspective, the primary value here isn't just speed—it’s the management of Schema Evolution. Manual mapping is a leading cause of "pipeline rot"; if GitHub updates its API response or adds a nested object, a manual pipeline breaks. dlt provides a resilient layer that handles these changes gracefully, ensuring the pipeline survives upstream shifts.
+"dlt elegantly formats [nested structures] into relational tables suited for loading directly into our BigQuery Data Warehouse."
+
+   **2. What is the benefit of Incremental Loading during ingestion?**
 Without incremental extraction, the pipeline would have to perform a "Full Load" every time it runs—fetching the complete historical timeline of a repository again. This process takes upwards of **12 minutes** to execute and unnecessarily consumes expensive API quotas and BigQuery scan processing time. By utilizing **incremental loading**, `dlt` tracks a state cursor (e.g., the last `created_at` or `starred_at` timestamp). Subsequent pipeline runs only download and process the **new or modified records** since the last successful run, dropping the total ingestion time down to a seamless **1-2 minutes**!
 
-**3. Why is Looker's dashboard refresh rate 15 minutes while Kestra's pipeline schedule is 1 hour?**
+Analysis: This is a classic cost-performance trade-off. Beyond the obvious time savings, this approach is critical for Rate Limit Management. GitHub’s API enforces strict quotas; by only fetching delta records, we preserve our API credits and minimize BigQuery scan processing costs. In production, minimizing the compute-to-insight ratio is as important as the data itself.
+
+   **3. Why is Looker's dashboard refresh rate 15 minutes while Kestra's pipeline schedule is 1 hour?**
 - **Orchestration Schedule (1 Hour)**: The Kestra workflow is scheduled to run hourly to balance data freshness against API limits and computational costs. Long-term metrics like repository stars, forks, and codebase commits do not necessitate sub-minute real-time tracking. Hourly batches efficiently capture these trends while being highly cost-effective.
 - **Looker Data Freshness (15 Minutes)**: Looker Studio heavily relies on data caching to minimize dashboard-load latencies and prevent unnecessary BigQuery querying overhead. Setting the dashboard data freshness schedule to 15 minutes guarantees that whenever the hourly Kestra pipeline pushes new data to BigQuery, Looker's cache is invalidated fast enough to pick it up, ensuring users see the most up-to-date insights without waiting for a longer cache cycle.
+
+Analysis: This approach reduces data-to-insight latency. It acknowledges that while repository metrics don't require sub-second real-time tracking, users expect to see the results of the latest pipeline run immediately without waiting for a stale cache to expire.
+
+   **4. BigQuery Efficiency: Beyond Simple Storage**
+The project uses Terraform to provision a tiered environment, separating raw data in github_tracker_staging from transformed models in the github_tracker production dataset. To ensure the warehouse remains responsive as the dataset grows, we implemented two key optimization strategies:
+- Partitioning: Time-series tables (such as daily growth or commit activity) are partitioned by date columns like week_start or created_at. This ensures that analytical queries only scan the relevant time slices rather than the entire table.
+- Clustering: Tables are clustered by frequently queried dimensions such as user_id, repo, and day_name. Clustering organizes data physically within BigQuery to accelerate aggregations and filtering.
+
+Analysis: These "under-the-hood" decisions directly optimize the bottom line. By reducing the volume of data scanned per query, these optimizations lead to faster dashboard loads and lower GCP billing—a necessity for any scalable project.
 
 ## 🚀 Reproducibility (How to Run)
 Follow these robust instructions to reproduce the project and run the code from scratch.
