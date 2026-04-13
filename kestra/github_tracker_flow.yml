@@ -1,0 +1,43 @@
+id: github_tracker_pipeline
+namespace: github.tracker
+
+triggers:
+  - id: hourly_schedule
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 * * * *"    # runs every hour at :00
+    recoverMissedSchedules: LAST # This will recover only the last missed schedule
+
+
+tasks:
+  - id: run_ingestion
+    type: io.kestra.plugin.scripts.python.Commands
+    namespaceFiles:
+      enabled: true
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+      networkMode: de_project_kestra_network
+    beforeCommands:
+      - pip install dlt[bigquery] google-cloud-bigquery-storage requests python-dotenv -q
+    commands:
+      - python ingestion.py
+    env:
+      GITHUB_TOKEN: "{{ secret('GITHUB_TOKEN') }}"
+      GCP_CREDENTIALS_B64: "{{ kv('GCP_CREDENTIALS_B64') }}"
+
+  - id: run_dbt
+    type: io.kestra.plugin.scripts.python.Commands
+    namespaceFiles:
+      enabled: true
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+      networkMode: de_project_kestra_network
+    beforeCommands:
+      - pip install dbt-bigquery -q
+      - mkdir -p /root/.dbt
+      - echo "$DBT_PROFILES_YML" > /root/.dbt/profiles.yml
+      - echo "$GCP_CREDENTIALS_B64" | base64 -d > /tmp/gcp-creds.json
+    commands:
+      - cd dbt && dbt run --select staging && dbt run --select mart
+    env:
+      DBT_PROFILES_YML: "{{ kv('DBT_PROFILES_YML') }}"
+      GCP_CREDENTIALS_B64: "{{ kv('GCP_CREDENTIALS_B64') }}"
